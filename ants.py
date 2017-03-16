@@ -33,15 +33,18 @@ class ant:
 				fov_coords.append(((self.position[0]+i)%board_lines, (self.position[1]+j)%board_columns))
 		return fov_coords
 
-	def move(self, board):
+	def move(self, board, ants):
 		# |0|1|2|
 		# |3|x|4|
 		# |5|6|7|
+		board_lines = board.shape[0]
+		board_columns = board.shape[1]
 		coords = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 		direction = random.randint(0,7)
-		new_position = (self.position[0] + coords[direction][0], self.position[1] + coords[direction][1])
-		board[new_position] = 1
-		self.position = new_position
+		new_position = ((self.position[0] + coords[direction][0])%board_lines, (self.position[1] + coords[direction][1])%board_columns)
+		if not new_position in [k.position for k in ants]:
+			board[new_position] = 1
+			self.position = new_position
 		
 
 def generate_board(lines, columns):

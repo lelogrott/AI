@@ -9,7 +9,7 @@ COLOR_red = (255,0,0)
 COLOR_white = (255,255,255)
 COLOR_black = (0,0,0)
 
-BOARD_size = (500,500)
+BOARD_size = (100, 100)
 
 class ant:
 	def __init__(self, position, loaded, field_of_view, index_in_position_array):
@@ -87,14 +87,15 @@ def check_closed_window():
 
 
 pygame.init()
-screen = pygame.display.set_mode(BOARD_size)
+display = pygame.display.set_mode((BOARD_size[0]*2, BOARD_size[1]*2))
+screen = pygame.Surface(BOARD_size)
 screen.fill(COLOR_white)
-
+pygame.transform.scale2x(screen, display)
 pygame.display.update()
 
 board = generate_board(BOARD_size[0], BOARD_size[1])
-populate_board(board, 7000)
-ants = generate_live_ants(board, 1, 400)
+populate_board(board, 1000)
+ants = generate_live_ants(board, 3, 100)
 live_ants_positions = [ant.position for ant in ants]
 
 for i in range(board.shape[0]):
@@ -103,7 +104,8 @@ for i in range(board.shape[0]):
 			gfxdraw.pixel(screen, i, j, COLOR_red)
 		if (i, j) in live_ants_positions:
 			gfxdraw.pixel(screen, i, j, COLOR_black)
-			
+
+pygame.transform.scale2x(screen, display)
 pygame.display.update()
 i=1
 while True:
@@ -126,6 +128,8 @@ while True:
 		gfxdraw.pixel(screen, new_position[0], new_position[1], COLOR_black)
 		
 	i += 1
-	if i%1000 == 0:
+	if i%100 == 0:
+		i=0
+		pygame.transform.scale2x(screen, display)
 		pygame.display.update()
 

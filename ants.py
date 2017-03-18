@@ -9,6 +9,8 @@ COLOR_red = (255,0,0)
 COLOR_white = (255,255,255)
 COLOR_black = (0,0,0)
 
+BOARD_size = (500,500)
+
 class ant:
 	def __init__(self, position, loaded, field_of_view, index_in_position_array):
 		self.position = position
@@ -35,11 +37,11 @@ class ant:
 
 	def should_pick_up(self, board):
 		fov_coords = self.get_field_of_view_coords(board)
-		return random.random() <= (float(len([board[k] for k in fov_coords if board[k] == 0]))/len(fov_coords))
+		return random.random() <= mt.pow(1.0/(1 + float(len([board[k] for k in fov_coords if board[k] == 0]))/len(fov_coords)), 2)
 
 	def should_drop_off(self, board):
 		fov_coords = self.get_field_of_view_coords(board)
-		return random.random() <= (float(len([board[k] for k in fov_coords if board[k] == -1]))/len(fov_coords))
+		return random.random() <= mt.pow((float(len([board[k] for k in fov_coords if board[k] == -1]))/len(fov_coords))/(float(len([board[k] for k in fov_coords if board[k] == -1]))/len(fov_coords) + 1), 2)
 
 	def move(self, board, live_ants_positions):
 		# |0|1|2|
@@ -85,18 +87,18 @@ def check_closed_window():
 
 
 pygame.init()
-screen = pygame.display.set_mode((500,500))
+screen = pygame.display.set_mode(BOARD_size)
 screen.fill(COLOR_white)
 
 pygame.display.update()
 
-board = generate_board(500,500)
-populate_board(board, 5000)
-ants = generate_live_ants(board, 3, 500)
+board = generate_board(BOARD_size[0], BOARD_size[1])
+populate_board(board, 7000)
+ants = generate_live_ants(board, 1, 400)
 live_ants_positions = [ant.position for ant in ants]
 
-for i in range(500):
-	for j in range(500):
+for i in range(board.shape[0]):
+	for j in range(board.shape[1]):
 		if board[i, j] == -1:
 			gfxdraw.pixel(screen, i, j, COLOR_red)
 		if (i, j) in live_ants_positions:

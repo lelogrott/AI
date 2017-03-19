@@ -38,12 +38,13 @@ void Ant::drop_off_ant(int** board){
 }
 
 bool Ant::should_pick_up(int** board){
-	vector<pair<int, int> > fov_coords = this->get_field_of_view_coords(board)
+	vector<pair<int, int> > fov_coords = this->get_field_of_view_coords(board);
+	int cont = 0;
 	for (fov_coords::const_iterator i = tl.begin(); i != tl.end(); ++i) {
 	{
-		if (i )
+		if (board[it->first][it->second] == 0)
 		{
-			/* code */
+			cont++;
 		}
 	}
 }

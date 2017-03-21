@@ -3,48 +3,48 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
+#include <algorithm>
 
 using namespace std;
 
 class Ant 
 {
-  int line;
-  int column;
+  pair<int, int> position;
   bool loaded;
   int field_of_view;
   int index_in_position_array;
   public:
-  	Ant(int line, int column, bool loaded, int field_of_view, int index_in_position_array);
-    void pick_up_ant(int** board);
-    void drop_off_ant(int** board);
-    vector<pair<int,int> > get_field_of_view_coords(int** board);
-    bool should_pick_up(int** board);
-    bool should_drop_off(int** board);
-    pair<pair<int, int>, pair<int,int> > move(int** board, vector<pair<int,int> > live_ants_positions);
+  	Ant(pair<int, int> position, bool loaded, int field_of_view, int index_in_position_array);
+    void pick_up_ant(vector<vector<int> > & board);
+    void drop_off_ant(vector<vector<int> > & board);
+    vector<pair<int,int> > get_field_of_view_coords(vector<vector<int> > board);
+    bool should_pick_up(vector<vector<int> > board);
+    bool should_drop_off(vector<vector<int> > board);
+    pair<pair<int, int>, pair<int,int> > move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions);
 };
 
-Ant::Ant(int line, int column, bool loaded, int field_of_view, int index_in_position_array)
+Ant::Ant(pair<int, int> position, bool loaded, int field_of_view, int index_in_position_array)
 {
-	line = line;
-	column = column;
+	position = position;
 	loaded = loaded;
 	field_of_view = field_of_view;
 	index_in_position_array = index_in_position_array;
 }
 
-void Ant::pick_up_ant(int** board)
+void Ant::pick_up_ant(vector<vector<int> > & board)
 {
-	board[this->line][this->column] = 0;
+	board[this->position.first][this->position.second] = 0;
 	this->loaded = true;
 }
 
-void Ant::drop_off_ant(int** board)
+void Ant::drop_off_ant(vector<vector<int> > & board)
 {
-	board[this->line][this->column] = -1;
+	board[this->position.second][this->position.first] = -1;
 	this->loaded = false;
 }
 
-bool Ant::should_pick_up(int** board)
+bool Ant::should_pick_up(vector<vector<int> > board)
 {
 	vector<pair<int, int> > fov_coords = this->get_field_of_view_coords(board);
 	int cont = 0;
@@ -58,7 +58,7 @@ bool Ant::should_pick_up(int** board)
   return (((rand()%100)/100) <= cont/fov_coords.size());
 }
 
-bool Ant::should_drop_off(int **board){
+bool Ant::should_drop_off(vector<vector<int> > board){
   vector<pair<int, int> > fov_coords = this->get_field_of_view_coords(board);
   int cont = 0;
   for (vector<pair<int, int> >::iterator it = fov_coords.begin(); it != fov_coords.end(); ++it)
@@ -71,7 +71,7 @@ bool Ant::should_drop_off(int **board){
   return (((rand()%100)/100) <= cont/fov_coords.size());
 }
 
-vector<pair<int,int> > Ant::get_field_of_view_coords(int** board)
+vector<pair<int,int> > Ant::get_field_of_view_coords(vector<vector<int> > board)
 {
 	int board_lines = (sizeof(board)/sizeof(board[0]));
 	int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
@@ -80,21 +80,82 @@ vector<pair<int,int> > Ant::get_field_of_view_coords(int** board)
 	{
 		for (int j = -this->field_of_view; j < this->field_of_view; ++j)
 		{
-			fov_coords.push_back(pair<int, int>((this->line+i)%board_lines,(this->column+j)%board_columns));
+			fov_coords.push_back(pair<int, int>((this->position.first + i)%board_lines,(this->position.second + j)%board_columns));
 		}
 	}
 	return fov_coords;
 }
 
-pair<pair<int, int>, pair<int,int> > Ant::move(int** board, vector<pair<int,int> > live_ants_positions)
+pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions)
 {
-
+    //  |0|1|2|
+    //  |3|x|4|
+    //  |5|6|7|
+  int board_lines = (sizeof(board)/sizeof(board[0]));
+  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  pair<int, int> coords[8] = {  make_pair(-1, -1), make_pair(-1, 0), make_pair(-1, 1), make_pair(0, -1), 
+                                make_pair(0, 1), make_pair(1, -1), make_pair(1, 0), make_pair(1, 1)
+                              };
+  int direction = random()%8;
+  pair<int, int> new_position = make_pair((this->position.first + coords[direction].first)%board_lines, (this->position.second + coords[direction].second)%board_columns);
+  pair<int, int> old_position = this->position;
+  live_ants_positions[this->index_in_position_array] = new_position;
+  this->position = new_position;
+  
+  return make_pair(old_position, new_position);
 }
 
+vector<vector<int> > generate_board(int lines, int columns)
+{
+  vector<vector<int> > board(lines);
+  for ( int i = 0 ; i < lines ; i++ )
+    board[i].resize(columns);
+  return board;
+}
+
+void populate_board(vector<vector<int> > & board, int n_dead_ants)
+{
+  int board_lines = (sizeof(board)/sizeof(board[0]));
+  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  vector<int> total_positions;
+  for (int i = 0; i < board_lines*board_columns; ++i)
+    total_positions.push_back(i);
+  random_shuffle(total_positions.begin(), total_positions.end());
+  for (int i = 0; i < n_dead_ants; ++i)
+    board[total_positions[i]/board_columns][total_positions[i]%board_columns] = -1;
+  return;
+}
+
+vector<Ant> generate_live_ants(vector<vector<int> > board, int fov_range, int n_live_ants)
+{
+  vector<Ant> live_ants;
+  int board_lines = (sizeof(board)/sizeof(board[0]));
+  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  vector<int> total_positions;
+  for (int i = 0; i < board_lines*board_columns; ++i)
+    total_positions.push_back(i);
+  for (int i = 0; i < n_live_ants; ++i)
+  {
+    Ant ant(make_pair(total_positions[i]/board_columns,total_positions[i]%board_columns), false, fov_range, i); 
+    live_ants.push_back(ant);
+  }
+  return live_ants;
+}
 
 int main () {
   
   srand(time(NULL));
+
+  vector<vector<int> > board = generate_board(5,5);
+  for (int i = 0; i < 5; ++i)
+  {  
+    for (int j = 0; j < 5; ++j)
+    {
+      cout << board[i][j] << ' ';
+    }
+    cout << '\n';
+  }
+  
 
   return 0;
 }

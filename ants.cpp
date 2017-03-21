@@ -10,11 +10,11 @@ using namespace std;
 
 class Ant 
 {
-  pair<int, int> position;
-  bool loaded;
-  int field_of_view;
-  int index_in_position_array;
   public:
+    pair<int, int> position;
+    bool loaded;
+    int field_of_view;
+    int index_in_position_array;
   	Ant(pair<int, int> position, bool loaded, int field_of_view, int index_in_position_array);
     void pick_up_ant(vector<vector<int> > & board);
     void drop_off_ant(vector<vector<int> > & board);
@@ -24,12 +24,12 @@ class Ant
     pair<pair<int, int>, pair<int,int> > move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions);
 };
 
-Ant::Ant(pair<int, int> position, bool loaded, int field_of_view, int index_in_position_array)
+Ant::Ant(pair<int, int> positio, bool loade, int field_of_vie, int index_in_position_arra)
 {
-	position = position;
-	loaded = loaded;
-	field_of_view = field_of_view;
-	index_in_position_array = index_in_position_array;
+	position = positio;
+	loaded = loade;
+	field_of_view = field_of_vie;
+	index_in_position_array = index_in_position_arra;
 }
 
 void Ant::pick_up_ant(vector<vector<int> > & board)
@@ -117,7 +117,6 @@ void populate_board(vector<vector<int> > & board, int n_dead_ants)
 {
   int board_lines = board.size();
   int board_columns = board[0].size();
-  cout << board_lines << ' ' << board_columns << '\n';
   vector<int> total_positions;
   for (int i = 0; i < board_lines*board_columns; ++i)
     total_positions.push_back(i);
@@ -125,6 +124,14 @@ void populate_board(vector<vector<int> > & board, int n_dead_ants)
   for (int i = 0; i < n_dead_ants; ++i)
     board[total_positions[i]/board_columns][total_positions[i]%board_columns] = -1;
   return;
+}
+
+void populate_live_ants_board(vector<vector<int> > & board, vector<Ant> live_ants)
+{
+  for (vector<Ant>::iterator i = live_ants.begin(); i != live_ants.end(); ++i)
+  {
+    board[i->position.first][i->position.second] = 1;
+  }
 }
 
 vector<Ant> generate_live_ants(vector<vector<int> > board, int fov_range, int n_live_ants)
@@ -135,6 +142,7 @@ vector<Ant> generate_live_ants(vector<vector<int> > board, int fov_range, int n_
   vector<int> total_positions;
   for (int i = 0; i < board_lines*board_columns; ++i)
     total_positions.push_back(i);
+  random_shuffle(total_positions.begin(), total_positions.end());
   for (int i = 0; i < n_live_ants; ++i)
   {
     Ant ant(make_pair(total_positions[i]/board_columns,total_positions[i]%board_columns), false, fov_range, i); 
@@ -143,20 +151,32 @@ vector<Ant> generate_live_ants(vector<vector<int> > board, int fov_range, int n_
   return live_ants;
 }
 
-int main () {
-  
-  srand(time(NULL));
-
-  vector<vector<int> > board = generate_board(5,5);
-  populate_board(board, 10);
-  for (int i = 0; i < 5; ++i)
+void show_board(vector<vector<int> > board)
+{
+  for (int i = 0; i < board.size(); ++i)
   {  
-    for (int j = 0; j < 5; ++j)
+    for (int j = 0; j < board[0].size(); ++j)
     {
       cout << board[i][j] << '\t';
     }
     cout << '\n';
   }
+  return;
+}
+
+int main () {
+  
+  srand(time(NULL));
+
+  vector<vector<int> > board = generate_board(20,20);
+  vector<vector<int> > live_ants_board = board;
+  populate_board(board, 200);
+  show_board(board);
+
+  vector<Ant> live_ants = generate_live_ants(board, 1, 10);
+  populate_live_ants_board(live_ants_board, live_ants);
+  show_board(live_ants_board);
+
 
   return 0;
 }

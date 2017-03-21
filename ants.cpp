@@ -1,3 +1,5 @@
+//compile: g++ -std=c++11 ants.cpp -o ants -lsfml-graphics -lsfml-window -lsfml-system
+
 #include <iostream>
 #include <tuple>
 #include <vector>
@@ -11,7 +13,7 @@ using namespace std;
 
 int mod (int a, int b)
 {
-  if(b < 0) //you can check for b == 0 separately and do what you want
+  if(b < 0)
     return mod(a, -b);   
   int ret = a % b;
   if(ret < 0)
@@ -175,9 +177,12 @@ void show_board(vector<vector<int> > board)
   return;
 }
 
+
 int main () {
   
   srand(time(NULL));
+
+  sf::RenderWindow window(sf::VideoMode(800, 600), "Ants");
 
   vector<vector<int> > board = generate_board(20,20);
   vector<vector<int> > live_ants_board = board;
@@ -192,9 +197,17 @@ int main () {
 
   show_board(board);
   cout << "\n--------------------\n";
+  window.clear(sf::Color::White);
   int i = 1;
-  while(i<=10000)
+  while(window.isOpen() && i<=10000)
   {
+    sf::Event event;
+    while (window.pollEvent(event))
+    {
+      // "close requested" event: we close the window
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
     for (vector<Ant>::iterator ant = live_ants.begin(); ant != live_ants.end(); ++ant)
     {
       if (!ant->loaded)
@@ -214,6 +227,7 @@ int main () {
       pair<pair<int, int>, pair<int, int> > positions = ant->move(board, live_ants_positions);
     }
     i++;
+    window.display();
   }
   show_board(board);
 

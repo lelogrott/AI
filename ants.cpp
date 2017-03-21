@@ -34,7 +34,7 @@ class Ant
     vector<pair<int,int> > get_field_of_view_coords(vector<vector<int> > board);
     bool should_pick_up(vector<vector<int> > board);
     bool should_drop_off(vector<vector<int> > board);
-    pair<pair<int, int>, pair<int,int> > move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions);
+    pair<pair<int, int>, pair<int,int> > move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions, vector<vector<int> > live_ants_board);
 };
 
 Ant::Ant(pair<int, int> positio, bool loade, int field_of_vie, int index_in_position_arra)
@@ -91,7 +91,7 @@ vector<pair<int,int> > Ant::get_field_of_view_coords(vector<vector<int> > board)
 	vector<pair<int,int> > fov_coords;
 	for (int i = -this->field_of_view; i <= this->field_of_view; ++i)
 	{
-		for (int j = -this->field_of_view; j < this->field_of_view; ++j)
+		for (int j = -this->field_of_view; j <= this->field_of_view; ++j)
 		{
 			fov_coords.push_back(pair<int, int>(mod(this->position.first + i, board_lines), mod(this->position.second + j, board_columns)));
 		}
@@ -99,7 +99,7 @@ vector<pair<int,int> > Ant::get_field_of_view_coords(vector<vector<int> > board)
 	return fov_coords;
 }
 
-pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions)
+pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vector<pair<int,int> > & live_ants_positions, vector<vector<int> > live_ants_board)
 {
     //  |0|1|2|
     //  |3|x|4|
@@ -112,6 +112,10 @@ pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vecto
   int direction = random()%8;
   pair<int, int> new_position = make_pair(mod(this->position.first + coords[direction].first, board_lines), mod(this->position.second + coords[direction].second, board_columns));
   pair<int, int> old_position = this->position;
+  if (live_ants_board[new_position.first][new_position.second] == 1)
+  {
+    return make_pair(old_position, old_position);
+  }
   live_ants_positions[this->index_in_position_array] = new_position;
   this->position = new_position;
   
@@ -177,37 +181,69 @@ void show_board(vector<vector<int> > board)
   return;
 }
 
+void draw_board(sf::RenderWindow & windowRef, vector<vector<int> > board, vector<vector<int> > live_ants_board)
+{
+  int board_lines = board.size();
+  int board_columns = board[0].size();
+  windowRef.clear(sf::Color::White);
+  for (int i = 0; i < board_lines; ++i)
+  {
+    for (int j = 0; j < board_columns; ++j)
+    {
+      sf::RectangleShape rectangle;
+      rectangle.setSize(sf::Vector2f(1, 1));
+      rectangle.setPosition(i, j);
+      if(board[i][j]==-1)
+      {
+        rectangle.setFillColor(sf::Color::Red);
+        windowRef.draw(rectangle);
+      }
+      if (live_ants_board[i][j]==1)
+      {
+        rectangle.setFillColor(sf::Color::Black);
+        windowRef.draw(rectangle);
+      }
+      
+    }
+  }
+}
 
 int main () {
   
   srand(time(NULL));
 
-  sf::RenderWindow window(sf::VideoMode(800, 600), "Ants");
+  //sf::RenderWindow window(sf::VideoMode(160, 160), "Ants");
 
-  vector<vector<int> > board = generate_board(20,20);
+  vector<vector<int> > board = generate_board(160,160);
   vector<vector<int> > live_ants_board = board;
-  populate_board(board, 200);
+  populate_board(board, 7000);
 
-  vector<Ant> live_ants = generate_live_ants(board, 1, 10);
+  vector<Ant> live_ants = generate_live_ants(board, 3, 100);
   vector<pair<int, int> > live_ants_positions;
   for (vector<Ant>::iterator i = live_ants.begin(); i != live_ants.end(); ++i)
     live_ants_positions.push_back(i->position);
 
   populate_live_ants_board(live_ants_board, live_ants);
 
-  show_board(board);
-  cout << "\n--------------------\n";
-  window.clear(sf::Color::White);
-  int i = 1;
-  while(window.isOpen() && i<=10000)
+  int i = 0;
+  while(i<=2000)
   {
-    sf::Event event;
-    while (window.pollEvent(event))
-    {
-      // "close requested" event: we close the window
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
+    // if (i%100==0)
+    // {
+    //   draw_board(window, board, live_ants_board);
+    //   window.display();
+    // }
+    // sf::Event event;
+    // while (window.pollEvent(event))
+    // {
+    //   // "close requested" event: we close the window
+    //   if (event.type == sf::Event::Closed)
+    //   {
+    //     window.close();
+    //     return 0;
+    //   }
+    // }
+    //cout << i << '\n';
     for (vector<Ant>::iterator ant = live_ants.begin(); ant != live_ants.end(); ++ant)
     {
       if (!ant->loaded)
@@ -224,12 +260,12 @@ int main () {
           ant->drop_off_ant(board);
         }
       }
-      pair<pair<int, int>, pair<int, int> > positions = ant->move(board, live_ants_positions);
+      pair<pair<int, int>, pair<int, int> > positions = ant->move(board, live_ants_positions, live_ants_board);
+      live_ants_board[positions.first.first][positions.first.second] = 0;
+      live_ants_board[positions.second.first][positions.second.second] = 1;
     }
     i++;
-    window.display();
   }
-  show_board(board);
 
   return 0;
 }

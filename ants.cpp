@@ -73,8 +73,8 @@ bool Ant::should_drop_off(vector<vector<int> > board){
 
 vector<pair<int,int> > Ant::get_field_of_view_coords(vector<vector<int> > board)
 {
-	int board_lines = (sizeof(board)/sizeof(board[0]));
-	int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+	int board_lines = board.size();
+  int board_columns = board[0].size();
 	vector<pair<int,int> > fov_coords;
 	for (int i = -this->field_of_view; i <= this->field_of_view; ++i)
 	{
@@ -91,8 +91,8 @@ pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vecto
     //  |0|1|2|
     //  |3|x|4|
     //  |5|6|7|
-  int board_lines = (sizeof(board)/sizeof(board[0]));
-  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  int board_lines = board.size();
+  int board_columns = board[0].size();
   pair<int, int> coords[8] = {  make_pair(-1, -1), make_pair(-1, 0), make_pair(-1, 1), make_pair(0, -1), 
                                 make_pair(0, 1), make_pair(1, -1), make_pair(1, 0), make_pair(1, 1)
                               };
@@ -115,8 +115,9 @@ vector<vector<int> > generate_board(int lines, int columns)
 
 void populate_board(vector<vector<int> > & board, int n_dead_ants)
 {
-  int board_lines = (sizeof(board)/sizeof(board[0]));
-  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  int board_lines = board.size();
+  int board_columns = board[0].size();
+  cout << board_lines << ' ' << board_columns << '\n';
   vector<int> total_positions;
   for (int i = 0; i < board_lines*board_columns; ++i)
     total_positions.push_back(i);
@@ -129,8 +130,8 @@ void populate_board(vector<vector<int> > & board, int n_dead_ants)
 vector<Ant> generate_live_ants(vector<vector<int> > board, int fov_range, int n_live_ants)
 {
   vector<Ant> live_ants;
-  int board_lines = (sizeof(board)/sizeof(board[0]));
-  int board_columns = (sizeof(board)/sizeof(board[0][0]))/board_lines;
+  int board_lines = board.size();
+  int board_columns = board[0].size();
   vector<int> total_positions;
   for (int i = 0; i < board_lines*board_columns; ++i)
     total_positions.push_back(i);
@@ -147,15 +148,15 @@ int main () {
   srand(time(NULL));
 
   vector<vector<int> > board = generate_board(5,5);
+  populate_board(board, 10);
   for (int i = 0; i < 5; ++i)
   {  
     for (int j = 0; j < 5; ++j)
     {
-      cout << board[i][j] << ' ';
+      cout << board[i][j] << '\t';
     }
     cout << '\n';
   }
-  
 
   return 0;
 }

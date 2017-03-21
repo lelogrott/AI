@@ -5,8 +5,19 @@
 #include <ctime>
 #include <cstring>
 #include <algorithm>
+#include <SFML/Graphics.hpp>
 
 using namespace std;
+
+int mod (int a, int b)
+{
+  if(b < 0) //you can check for b == 0 separately and do what you want
+    return mod(a, -b);   
+  int ret = a % b;
+  if(ret < 0)
+    ret+=b;
+  return ret;
+}
 
 class Ant 
 {
@@ -40,7 +51,7 @@ void Ant::pick_up_ant(vector<vector<int> > & board)
 
 void Ant::drop_off_ant(vector<vector<int> > & board)
 {
-	board[this->position.second][this->position.first] = -1;
+	board[this->position.first][this->position.second] = -1;
 	this->loaded = false;
 }
 
@@ -80,7 +91,7 @@ vector<pair<int,int> > Ant::get_field_of_view_coords(vector<vector<int> > board)
 	{
 		for (int j = -this->field_of_view; j < this->field_of_view; ++j)
 		{
-			fov_coords.push_back(pair<int, int>((this->position.first + i)%board_lines,(this->position.second + j)%board_columns));
+			fov_coords.push_back(pair<int, int>(mod(this->position.first + i, board_lines), mod(this->position.second + j, board_columns)));
 		}
 	}
 	return fov_coords;
@@ -97,7 +108,7 @@ pair<pair<int, int>, pair<int,int> > Ant::move(vector<vector<int> > board, vecto
                                 make_pair(0, 1), make_pair(1, -1), make_pair(1, 0), make_pair(1, 1)
                               };
   int direction = random()%8;
-  pair<int, int> new_position = make_pair((this->position.first + coords[direction].first)%board_lines, (this->position.second + coords[direction].second)%board_columns);
+  pair<int, int> new_position = make_pair(mod(this->position.first + coords[direction].first, board_lines), mod(this->position.second + coords[direction].second, board_columns));
   pair<int, int> old_position = this->position;
   live_ants_positions[this->index_in_position_array] = new_position;
   this->position = new_position;
@@ -171,12 +182,40 @@ int main () {
   vector<vector<int> > board = generate_board(20,20);
   vector<vector<int> > live_ants_board = board;
   populate_board(board, 200);
-  show_board(board);
 
   vector<Ant> live_ants = generate_live_ants(board, 1, 10);
-  populate_live_ants_board(live_ants_board, live_ants);
-  show_board(live_ants_board);
+  vector<pair<int, int> > live_ants_positions;
+  for (vector<Ant>::iterator i = live_ants.begin(); i != live_ants.end(); ++i)
+    live_ants_positions.push_back(i->position);
 
+  populate_live_ants_board(live_ants_board, live_ants);
+
+  show_board(board);
+  cout << "\n--------------------\n";
+  int i = 1;
+  while(i<=10000)
+  {
+    for (vector<Ant>::iterator ant = live_ants.begin(); ant != live_ants.end(); ++ant)
+    {
+      if (!ant->loaded)
+      {
+        if (board[ant->position.first][ant->position.second] == -1 && ant->should_pick_up(board))
+        {
+          ant->pick_up_ant(board);
+        }
+      } 
+      else if (ant->loaded)
+      {
+        if (board[ant->position.first][ant->position.second] == 0 && ant->should_drop_off(board))
+        {
+          ant->drop_off_ant(board);
+        }
+      }
+      pair<pair<int, int>, pair<int, int> > positions = ant->move(board, live_ants_positions);
+    }
+    i++;
+  }
+  show_board(board);
 
   return 0;
 }

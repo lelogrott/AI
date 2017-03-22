@@ -13,7 +13,7 @@
 #define BOARD_SIZE 160
 #define N_LIVE_ANTS 100
 #define N_DEAD_ANTS 7000
-#define FOV_RANGE 5
+#define FOV_RANGE 10
 
 typedef struct Pair
 {

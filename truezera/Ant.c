@@ -73,19 +73,19 @@ void drop_off_ant(int ***board, pAnt p)
 
 int should_pick_up(int **board, struct Ant ant)
 {
-  int cont = 0;
-  int total = 0;
+  double cont = 0;
+  double total = 0;
   int i, j;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
-    total++;
     for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
     {
       if (board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)] == 0)
         cont++;
+      total++;
     }
   }
-  if (((rand()%100)/100) <= (pow((cont/total),2) * 100))
+  if (((double)(rand()%100)/100) <= pow((cont/total), 2))
     return SIM;
   else
     return NAO; 
@@ -93,19 +93,20 @@ int should_pick_up(int **board, struct Ant ant)
 
 int should_drop_off(int **board, struct Ant ant)
 {
-  int cont = 0;
-  int total = 0;
+  double cont = 0;
+  double total = 0;
   int i, j;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
-    total++;
     for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
     {
       if (board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)] == -1)
         cont++;
+      total++;
     }
   }
-  if (((rand()%100)/100) <= (pow((cont/total),2) * 100))
+
+  if (((double)(rand()%100)/100.0) <= pow((cont/total), 2))
     return SIM;
   else
     return NAO;

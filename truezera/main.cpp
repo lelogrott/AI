@@ -43,7 +43,7 @@ int main(){
 
   generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE);
 
-  //show_ants_array(live_ants, 10);
+  //show_ants_array(live_ants, N_LIVE_ANTS);
 
   generate_board(&board);
 
@@ -59,12 +59,12 @@ int main(){
 
   int i, it=0;
 
-  while(it<1000000)
+  while(true)
   {
-    if (it%1000==0)
+    if (it%10000==0)
     {
       draw_board(window, board, live_ants_board);
-      window.display();
+      window.display();it=0;
     }
     sf::Event event;
     while (window.pollEvent(event))

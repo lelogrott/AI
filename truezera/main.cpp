@@ -1,3 +1,5 @@
+//compile: g++ -std=c++11 main.cpp -o ants Ant.c -lsfml-graphics -lsfml-window -lsfml-system -O3
+
 #include "Util.h"
 #include <iostream>
 #include <cstdlib>

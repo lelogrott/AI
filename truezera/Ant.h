@@ -25,12 +25,19 @@ typedef struct Ant
   Pair position;
   int loaded;
   int field_of_view;
-  int size;
-  int weight;
 }Ant;
+
+typedef struct Data
+{ 
+  Pair position;
+  int type;
+  double size;
+  double weight;
+}Data;
 
 typedef struct Ant *pAnt, **ppAnt;
 typedef struct Pair *pPair, **ppPair;
+typedef struct Data *pData, **ppData;
 
 
 int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range);
@@ -43,6 +50,10 @@ int should_pick_up(int **board, struct Ant ant);
 int should_drop_off(int **board, struct Ant ant);
 int move(int **board, int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p);
 
+
+int generate_data_board_for_plot(int ***board, int n_data, pData data_array);
+int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array);
+int generate_data_array(ppData pp, int n_data);
 
 /**     UTILS FUNCTIONS     **/
 int generate_coords(ppPair pp);

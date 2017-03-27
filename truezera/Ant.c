@@ -23,6 +23,34 @@ int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range)
     return ret;
 }
 
+int generate_data_array(ppData pp, int n_data)
+{   
+  int ret = FRACASSO;
+	if(((*pp)=(pData)malloc(sizeof(Data)*n_data))==NULL)
+		ret = FRACASSO;
+	else
+	{	
+    int i;
+    int *random_numbers;
+    generate_random_numbers(&random_numbers, n_data);
+    FILE *f = fopen("data.txt", "r");
+    for (i = 0; i < n_data; ++i)
+    {
+    	double size, weight;
+    	int type;
+    	fscanf(f, "%lf %lf %d", &size, &weight, &type);
+      (*pp)[i].position.i = random_numbers[i]/BOARD_SIZE; 
+      (*pp)[i].position.j = random_numbers[i]%BOARD_SIZE;
+      (*pp)[i].size = size;
+      (*pp)[i].weight = weight;
+      (*pp)[i].type = type;
+    }
+    fclose(f);
+    ret = SUCESSO;
+	}
+    return ret;
+}
+
 int show_ants_array(pAnt p, int n_ants)
 {
   int i;
@@ -46,6 +74,44 @@ int populate_board(int ***board, int n_dead_ants)
   {
     (*board)[random_numbers[i]/BOARD_SIZE][random_numbers[i]%BOARD_SIZE] = -1;
   }
+  return SUCESSO;
+}
+
+int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array)
+{
+	int ret = FRACASSO;
+	if (((*board)= (ppData)malloc(sizeof(pData) * BOARD_SIZE))==NULL)
+    return ret;
+
+  for (i = 0; i < BOARD_SIZE; ++i)
+  {
+    if (((*board)[i] = (pData)malloc(sizeof(Data) * BOARD_SIZE))==NULL)
+      return ret;
+  }
+  int i, j;
+  for (i = 0; i < BOARD_SIZE; ++i)
+  {
+  	for (j = 0; j < BOARD_SIZE; ++j)
+  	{
+  		(*board)[i][j].type = -1;
+  	}
+  }
+  for (i = 0; i < n_data; ++i)
+  {
+  	(*board)[n_data[i].position.i][n_data[i].position.j].size = n_data[i].size;
+  	(*board)[n_data[i].position.i][n_data[i].position.j].weight = n_data[i].weight;
+  	(*board)[n_data[i].position.i][n_data[i].position.j].type = n_data[i].type;
+  }
+  return SUCESSO;
+}
+
+int generate_data_board_for_plot(int ***board, int n_data, pData data_array)
+{
+	if (generate_board(board) == FRACASSO)
+  	return FRACASSO;
+  int i;
+  for (i = 0; i < n_data; ++i)
+    (*board)[data_array[i].position.i][data_array[i].position.j] = data_array[i].type;
   return SUCESSO;
 }
 

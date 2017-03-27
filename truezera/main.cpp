@@ -40,24 +40,18 @@ int main(){
   generate_coords(&coords);
   
 
-  pAnt live_ants;
-  int **board, **live_ants_board;
+  pData data_array;
+  int **plot_board, **live_ants_board;
 
   generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE);
 
-  //show_ants_array(live_ants, N_LIVE_ANTS);
+  generate_data_array(&data_array, 400);
 
-  generate_board(&board);
 
-  populate_board(&board, N_DEAD_ANTS);
+  generate_data_board_for_plot(&plot_board, 400, data_array);
 
-  //show_board(board, "DEAD ANTS BOARD");
-
-  //printf("\n");
-
+ 
   generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants);
-  //show_board(live_ants_board, "LIVE ANTS BOARD");
-  //printf("\n");
 
   int i, it=0;
 

@@ -25,6 +25,8 @@ typedef struct Ant
   Pair position;
   int loaded;
   int field_of_view;
+  int size;
+  int weight;
 }Ant;
 
 typedef struct Ant *pAnt, **ppAnt;

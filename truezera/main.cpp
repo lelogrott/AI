@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <SFML/Graphics.hpp>
 
-void draw_board(sf::RenderWindow & windowRef, int **board, int **live_ants_board)
+
+void draw_board(sf::RenderWindow & windowRef, int **board, int **live_ants_board, int BOARD_SIZE)
 {
   windowRef.clear(sf::Color::White);
   for (int i = 0; i < BOARD_SIZE; ++i)
@@ -28,7 +29,15 @@ void draw_board(sf::RenderWindow & windowRef, int **board, int **live_ants_board
   }
 }
 
-int main(){
+int main(int argc, char const *argv[]){
+
+  struct timeval timevalA;
+  struct timeval timevalB;
+
+  int BOARD_SIZE = atoi(argv[1]);
+  int N_LIVE_ANTS = atoi(argv[2]);
+  int N_DEAD_ANTS = atoi(argv[3]);
+  int FOV_RANGE  = atoi(argv[4]);
 
   srand(time(NULL));
   sf::RenderWindow window(sf::VideoMode(160, 160), "Ants");
@@ -41,31 +50,27 @@ int main(){
   pAnt live_ants;
   int **board, **live_ants_board;
 
-  generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE);
+  generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE, BOARD_SIZE);
 
   //show_ants_array(live_ants, N_LIVE_ANTS);
 
-  generate_board(&board);
+  generate_board(&board, BOARD_SIZE);
 
-  populate_board(&board, N_DEAD_ANTS);
+  populate_board(&board, N_DEAD_ANTS, BOARD_SIZE);
 
   //show_board(board, "DEAD ANTS BOARD");
 
   //printf("\n");
 
-  generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants);
+  generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants, BOARD_SIZE);
   //show_board(live_ants_board, "LIVE ANTS BOARD");
   //printf("\n");
 
   int i, it=0;
-
-  while(true)
-  {
-    if (it%10000==0)
-    {
-      draw_board(window, board, live_ants_board);
-      window.display();it=0;
-    }
+  int print = 1;
+  while (print) {
+    draw_board(window, board, live_ants_board, BOARD_SIZE);
+    window.display();
     sf::Event event;
     while (window.pollEvent(event))
     {
@@ -73,30 +78,71 @@ int main(){
       if (event.type == sf::Event::Closed)
       {
         window.close();
-        return 0;
+        print = 0;
+        break;
       }
     }
+  }
+  gettimeofday(&timevalA,NULL);
+  while(it < 3000000)
+  {
+    // if (it%1000==0)
+    // {
+    //   draw_board(window, board, live_ants_board);
+    //   window.display();it=0;
+    // }
+    // sf::Event event;
+    // while (window.pollEvent(event))
+    // {
+    //   // "close requested" event: we close the window
+    //   if (event.type == sf::Event::Closed)
+    //   {
+    //     window.close();
+    //     return 0;
+    //   }
+    // }
     for (i = 0; i < N_LIVE_ANTS; ++i)
     {
       if (live_ants[i].loaded == NAO)
       {
-        if ((board[live_ants[i].position.i][live_ants[i].position.j] == -1) && (should_pick_up(board, live_ants[i])==SIM))
+        if ((board[live_ants[i].position.i][live_ants[i].position.j] == -1) && (should_pick_up(board, live_ants[i], BOARD_SIZE)==SIM))
         {
           pick_up_ant(&board, &live_ants[i]);
         }
       }
       else if (live_ants[i].loaded == SIM)
       {
-        if ((board[live_ants[i].position.i][live_ants[i].position.j] == 0) && (should_drop_off(board, live_ants[i])==SIM))
+        if ((board[live_ants[i].position.i][live_ants[i].position.j] == 0) && (should_drop_off(board, live_ants[i], BOARD_SIZE)==SIM))
         {
           drop_off_ant(&board, &live_ants[i]);
         } 
       }
-      move(board, live_ants_board, coords, &old_position, &new_position, &live_ants[i]);
+      move(board, live_ants_board, coords, &old_position, &new_position, &live_ants[i], BOARD_SIZE);
       live_ants_board[old_position.i][old_position.j] = 0;
       live_ants_board[new_position.i][new_position.j] = 1;
     }
     it++;
+  }
+  gettimeofday(&timevalB,NULL);
+  printf("\ntempo de execucao: %lf\n", timevalB.tv_sec-timevalA.tv_sec+(timevalB.tv_usec-timevalA.tv_usec)/(double)1000000);
+
+  print =1;
+  sf::RenderWindow windows(sf::VideoMode(160, 160), "Ants");
+  while (print) {
+    draw_board(windows, board, live_ants_board, BOARD_SIZE);
+    windows.display();
+    sf::Event event;
+    while (windows.pollEvent(event))
+    {
+      // "close requested" event: we close the window
+      if (event.type == sf::Event::Closed)
+      {
+        windows.close();
+        print = 0;
+        break;
+      }
+    }
+    
   }
   // show_board(board, "DEAD ANTS BOARD");
   

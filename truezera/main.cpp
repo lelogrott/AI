@@ -49,17 +49,6 @@ int main(int argc, char const *argv[]){
   generate_coords(&coords);
   
 
-  pData data_array;
-  int **plot_board, **live_ants_board;
-
-  generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE, BOARD_SIZE);
-
-  generate_data_array(&data_array, 400);
-
-
-  generate_data_board_for_plot(&plot_board, 400, data_array);
-
-  generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants, BOARD_SIZE);
 
   int i, it=0;
   int print = 1;

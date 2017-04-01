@@ -1,7 +1,7 @@
 #include "Ant.h"
 
 
-int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range)
+int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range, int BOARD_SIZE)
 {   
   int ret = FRACASSO;
 	if(((*pp)=(pAnt)malloc(sizeof(Ant)*n_live_ants))==NULL)
@@ -10,7 +10,7 @@ int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range)
 	{	
     int i;
     int *random_numbers;
-    generate_random_numbers(&random_numbers, n_live_ants);
+    generate_random_numbers(&random_numbers, n_live_ants, BOARD_SIZE);
     for (i = 0; i < n_live_ants; ++i)
     {
       (*pp)[i].position.i = random_numbers[i]/BOARD_SIZE; 
@@ -37,11 +37,11 @@ int show_ants_array(pAnt p, int n_ants)
   return SUCESSO;
 }
 
-int populate_board(int ***board, int n_dead_ants)
+int populate_board(int ***board, int n_dead_ants, int BOARD_SIZE)
 {
   int i;
   int *random_numbers;
-  generate_random_numbers(&random_numbers, n_dead_ants);
+  generate_random_numbers(&random_numbers, n_dead_ants, BOARD_SIZE);
   for (i = 0; i < n_dead_ants; ++i)
   {
     (*board)[random_numbers[i]/BOARD_SIZE][random_numbers[i]%BOARD_SIZE] = -1;
@@ -49,9 +49,9 @@ int populate_board(int ***board, int n_dead_ants)
   return SUCESSO;
 }
 
-int generate_live_ants_board(int ***board, int n_live_ants, pAnt ants_array)
+int generate_live_ants_board(int ***board, int n_live_ants, pAnt ants_array, int BOARD_SIZE)
 {
-  if (generate_board(board) == FRACASSO)
+  if (generate_board(board, BOARD_SIZE) == FRACASSO)
     return FRACASSO;
   int i;
   for (i = 0; i < n_live_ants; ++i)
@@ -71,7 +71,7 @@ void drop_off_ant(int ***board, pAnt p)
   p->loaded = NAO;
 }
 
-int should_pick_up(int **board, struct Ant ant)
+int should_pick_up(int **board, struct Ant ant, int BOARD_SIZE)
 {
   double cont = 0;
   double total = 0;
@@ -91,7 +91,7 @@ int should_pick_up(int **board, struct Ant ant)
     return NAO; 
 }
 
-int should_drop_off(int **board, struct Ant ant)
+int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
 {
   double cont = 0;
   double total = 0;
@@ -112,7 +112,7 @@ int should_drop_off(int **board, struct Ant ant)
     return NAO;
 }
 
-int move(int **board, int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p)
+int move(int **board, int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE)
 {
   int direction = rand()%9;
   if (live_ants_board[mod(p->position.i + coords[direction].i, BOARD_SIZE)][mod(p->position.j + coords[direction].j, BOARD_SIZE)] == 1)

@@ -22,7 +22,7 @@ int generate_coords(Pair **pp)
   return ret;
 }
 
-int generate_random_numbers(int **random_numbers, int n_numbers)
+int generate_random_numbers(int **random_numbers, int n_numbers, int BOARD_SIZE)
 {
   int ret = FRACASSO;
   int* checker;
@@ -50,7 +50,7 @@ int generate_random_numbers(int **random_numbers, int n_numbers)
   return ret;
 }
 
-int generate_board(int ***board)
+int generate_board(int ***board, int BOARD_SIZE)
 {
   int i, ret = FRACASSO;
   if (((*board)= (int**)calloc(BOARD_SIZE, sizeof(int*)))==NULL)
@@ -64,7 +64,7 @@ int generate_board(int ***board)
   return SUCESSO;
 }
 
-int show_board(int **board, char *board_name)
+int show_board(int **board, char *board_name, int BOARD_SIZE)
 {
   int i,j;
   printf("%s\n------------------\n", board_name);

@@ -66,14 +66,14 @@ int main(int argc, char const *argv[]){
   pAnt live_ants;
   pData data_array;
   ppData data_board;
-  int **plot_board, **live_ants_board;
+  int **live_ants_board;
+
+  double max_dist;
 
   generate_live_ants_array(&live_ants, N_LIVE_ANTS, FOV_RANGE, BOARD_SIZE);
 
-  generate_data_array(&data_array, 400, BOARD_SIZE);
+  generate_data_array(&data_array, 400, &max_dist, BOARD_SIZE);
 
-  generate_data_board_for_plot(&plot_board, 400, data_array, BOARD_SIZE);
- 
   generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants, BOARD_SIZE);
 
   generate_and_populate_data_board_for_calc(&data_board, 400, data_array, BOARD_SIZE);
@@ -83,7 +83,7 @@ int main(int argc, char const *argv[]){
   int i, print, it=0;
   while(true)
   {
-    if (it%10000==0)
+    if (it%1000==0)
     {
       draw_board(window, data_board, live_ants_board, BOARD_SIZE);
       window.display();it=0;
@@ -102,16 +102,18 @@ int main(int argc, char const *argv[]){
     {
       if (live_ants[i].loaded == NAO)
       {
-        if ((data_board[live_ants[i].position.i][live_ants[i].position.j].type != -1) && (should_pick_up_data(data_board, live_ants[i], BOARD_SIZE)==SIM))
+        if ((data_board[live_ants[i].position.i][live_ants[i].position.j].type != -1) && (should_pick_up_data(data_board, live_ants[i], max_dist, BOARD_SIZE)==SIM))
         {
           pick_up_data(&data_board, &live_ants[i]);
+          // printf("pegou\n");
         }
       }
       else if (live_ants[i].loaded == SIM)
       {
-        if ((data_board[live_ants[i].position.i][live_ants[i].position.j].type == -1) && (should_drop_off_data(data_board, live_ants[i], BOARD_SIZE)==SIM))
+        if ((data_board[live_ants[i].position.i][live_ants[i].position.j].type == -1) && (should_drop_off_data(data_board, live_ants[i], max_dist, BOARD_SIZE)==SIM))
         {
           drop_off_data(&data_board, &live_ants[i]);
+          // printf("soltou\n");
         } 
       }
       move(live_ants_board, coords, &old_position, &new_position, &live_ants[i], BOARD_SIZE);

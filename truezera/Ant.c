@@ -23,7 +23,7 @@ int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range, int BOARD
     return ret;
 }
 
-int generate_data_array(ppData pp, int n_data, int BOARD_SIZE)
+int generate_data_array(ppData pp, int n_data, double *max_dist, int BOARD_SIZE)
 {   
   int ret = FRACASSO;
 	if(((*pp)=(pData)malloc(sizeof(Data)*n_data))==NULL)
@@ -32,6 +32,8 @@ int generate_data_array(ppData pp, int n_data, int BOARD_SIZE)
 	{	
     int i;
     int *random_numbers;
+    double max_weight = -1; double max_size = -1;
+    double min_weight = 1000; double min_size = 1000;
     generate_random_numbers(&random_numbers, n_data, BOARD_SIZE);
     FILE *f = fopen("data.txt", "r");
     for (i = 0; i < n_data; ++i)
@@ -44,8 +46,17 @@ int generate_data_array(ppData pp, int n_data, int BOARD_SIZE)
       (*pp)[i].size = size;
       (*pp)[i].weight = weight;
       (*pp)[i].type = type;
+      if (min_size > size)
+        min_size = size;
+      if (min_weight > weight)
+        min_weight = weight;
+      if (max_size < size)
+        max_size = size;
+      if (max_weight < weight)
+        max_weight = weight;
     }
     fclose(f);
+    *max_dist = sqrt(pow((max_size - min_size), 2) + pow((max_weight - min_weight), 2));
     ret = SUCESSO;
 	}
     return ret;
@@ -178,15 +189,13 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
     return NAO;
 }
 
-int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE)
+int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.2;
+  double alpha = 1;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
-  double max = -1;
-  double min = 100000;
   double dist;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
@@ -196,45 +205,38 @@ int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE)
       if (data.type != -1)
       {
         s++;
-        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]));
-        sum += dist;
-        if (min > dist)
-        {
-          min = dist;
-        }
-        if (max < dist)
-        {
-          max = dist;
-        }
+        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]))/max_dist;
+        // printf("\n>> %lf\n", dist);
+        sum +=  1 - dist/alpha;
+        // sum += dist;
       }
     }
   }
-  sum = sum/((max)*s);
-  sum +=s;
   f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
-  
+  // f_i = sum/(s);
   //f_i =  (sum/s)/max;
   //f_i =  1+(min-(sum/s))/(max - min);
   if (f_i < 0)
   {
     f_i = 0;
   }
-  printf(">>%lf | >> %lf\n", f_i, sum);
-  if (((double)(rand()%100)/100) >= pow(f_i, 2))
+  double pick = pow((0.1/(0.1 + f_i)), 2);
+  double pick_chance = ((double)(rand()%1000000)/1000000);
+  //printf(">>%lf | >> %lf | >> %lf | >> %lf\n", f_i, pick, pick_chance, sum);
+
+  if ( pick_chance <= pick)
     return SIM;
   else
     return NAO;  
 }
 
-int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE)
+int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.2;
+  double alpha = 1;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
-  double max = -1;
-  double min = 100000;
   double dist;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
@@ -244,31 +246,23 @@ int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE)
       if (data.type != -1)
       {
         s++;
-        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]));
-        sum += dist;
-        //sum += dist;
-        if (min > dist)
-        {
-          min = dist;
-        }
-        if (max < dist)
-        {
-          max = dist;
-        }
+        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]))/max_dist;
+        sum += 1 - dist/alpha;
+        // sum += dist;
       }
     }
   }
-  sum = sum/((max)*s);
-  sum +=s;
   f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
+  // f_i = sum/(s);
   
   //f_i =  (sum/s)/max;
   if (f_i < 0)
   {
     f_i = 0;
   }
-  printf("@@%lf | >> %lf\n", f_i, sum);
-  if (((double)(rand()%100)/100) <= pow(f_i, 2))
+  double drop = pow((f_i/(0.5 + f_i)), 2);
+  //printf("@@%lf | >> %lf | >> %lf\n", f_i, drop, sum);
+  if (((double)(rand()%1000000)/1000000) <= pow((f_i/(0.1 + f_i)), 2))
     return SIM;
   else
     return NAO;  

@@ -47,8 +47,8 @@ void pick_up_ant(int ***board, pAnt p);
 void drop_off_ant(int ***board, pAnt p);
 int should_pick_up(int **board, struct Ant ant, int BOARD_SIZE);
 int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE);
-int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE);
-int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE);
+int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE);
+int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE);
 void pick_up_data(ppData *board, pAnt p);
 void drop_off_data(ppData *board, pAnt p);
 int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE);
@@ -56,7 +56,7 @@ int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_posi
 
 int generate_data_board_for_plot(int ***board, int n_data, pData data_array, int BOARD_SIZE);
 int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array, int BOARD_SIZE);
-int generate_data_array(ppData pp, int n_data, int BOARD_SIZE);
+int generate_data_array(ppData pp, int n_data, double *max_dist, int BOARD_SIZE);
 
 /**     UTILS FUNCTIONS     **/
 int generate_coords(ppPair pp);

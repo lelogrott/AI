@@ -23,7 +23,7 @@ int generate_live_ants_array(ppAnt pp, int n_live_ants, int fov_range, int BOARD
     return ret;
 }
 
-int generate_data_array(ppData pp, int n_data)
+int generate_data_array(ppData pp, int n_data, int BOARD_SIZE)
 {   
   int ret = FRACASSO;
 	if(((*pp)=(pData)malloc(sizeof(Data)*n_data))==NULL)
@@ -178,7 +178,80 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
     return NAO;
 }
 
-int move(int **board, int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE)
+int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE)
+{
+  double cont = 0;
+  double total = 0;
+  double sum = 0;
+  double alpha = 2;
+  double f_i = 0;
+  int i, j;
+  for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
+  {
+    for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
+    {
+      Data data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
+      if (data.type != -1)
+      {
+        sum += 1.0 - euclidean_distance(data, board[ant.position.i][ant.position.j])/alpha;
+      }
+    }
+  }
+  f_i = (1.0/pow(ant.field_of_view,2)) * sum;
+  if (f_i < 0)
+  {
+    f_i = 0;
+  }
+  if (((double)(rand()%100)/100) <= f_i)
+    return SIM;
+  else
+    return NAO;  
+}
+
+int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE)
+{
+  double cont = 0;
+  double total = 0;
+  double sum = 0;
+  double alpha = 2;
+  double f_i = 0;
+  int i, j;
+  for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
+  {
+    for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
+    {
+      Data data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
+      if (data.type != -1)
+      {
+        sum += 1.0 - euclidean_distance(data, board[ant.position.i][ant.position.j])/alpha;
+      }
+    }
+  }
+  f_i = (1.0/pow(ant.field_of_view,2)) * sum;
+  if (f_i < 0)
+  {
+    f_i = 0;
+  }
+  if (((double)(rand()%100)/100) >= f_i)
+    return SIM;
+  else
+    return NAO;  
+}
+
+void pick_up_data(ppData *board, pAnt p)
+{
+  memcpy(&(p->data), &((*board)[p->position.i][p->position.j]), sizeof(Data));
+  (*board)[p->position.i][p->position.j].type = -1;
+  p->loaded = SIM;
+}
+
+void drop_off_data(ppData *board, pAnt p)
+{
+  memcpy(&((*board)[p->position.i][p->position.j]), &(p->data), sizeof(Data));
+  p->loaded = NAO;
+}
+
+int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE)
 {
   int direction = rand()%9;
   if (live_ants_board[mod(p->position.i + coords[direction].i, BOARD_SIZE)][mod(p->position.j + coords[direction].j, BOARD_SIZE)] == 1)

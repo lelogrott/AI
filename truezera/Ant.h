@@ -18,13 +18,6 @@ typedef struct Pair
   int i,j;
 }Pair;
 
-typedef struct Ant
-{ 
-  Pair position;
-  int loaded;
-  int field_of_view;
-}Ant;
-
 typedef struct Data
 { 
   Pair position;
@@ -32,6 +25,14 @@ typedef struct Data
   double size;
   double weight;
 }Data;
+
+typedef struct Ant
+{ 
+  Pair position;
+  int loaded;
+  int field_of_view;
+  Data data;
+}Ant;
 
 typedef struct Ant *pAnt, **ppAnt;
 typedef struct Pair *pPair, **ppPair;
@@ -46,12 +47,16 @@ void pick_up_ant(int ***board, pAnt p);
 void drop_off_ant(int ***board, pAnt p);
 int should_pick_up(int **board, struct Ant ant, int BOARD_SIZE);
 int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE);
-int move(int **board, int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE);
+int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE);
+int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE);
+void pick_up_data(ppData *board, pAnt p);
+void drop_off_data(ppData *board, pAnt p);
+int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE);
 
 
 int generate_data_board_for_plot(int ***board, int n_data, pData data_array);
-int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array);
-int generate_data_array(ppData pp, int n_data);
+int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array, int BOARD_SIZE);
+int generate_data_array(ppData pp, int n_data, int BOARD_SIZE);
 
 /**     UTILS FUNCTIONS     **/
 int generate_coords(ppPair pp);

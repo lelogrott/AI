@@ -88,3 +88,8 @@ int mod (int a, int b)
     ret+=b;
   return ret;
 }
+
+double euclidean_distance(Data a, Data b)
+{
+  return sqrt(pow((a.size - b.size),2) + pow((a.weight - b.weight),2));
+}

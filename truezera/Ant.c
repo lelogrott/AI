@@ -32,7 +32,7 @@ int generate_data_array(ppData pp, int n_data, int BOARD_SIZE)
 	{	
     int i;
     int *random_numbers;
-    generate_random_numbers(&random_numbers, n_data);
+    generate_random_numbers(&random_numbers, n_data, BOARD_SIZE);
     FILE *f = fopen("data.txt", "r");
     for (i = 0; i < n_data; ++i)
     {
@@ -77,10 +77,11 @@ int populate_board(int ***board, int n_dead_ants, int BOARD_SIZE)
   return SUCESSO;
 }
 
-int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array)
+int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array, int BOARD_SIZE)
 {
 	int ret = FRACASSO;
-	if (((*board)= (ppData)malloc(sizeof(pData) * BOARD_SIZE))==NULL)
+  int i, j;
+  if (((*board)= (ppData)malloc(sizeof(pData) * BOARD_SIZE))==NULL)
     return ret;
 
   for (i = 0; i < BOARD_SIZE; ++i)
@@ -88,7 +89,6 @@ int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData d
     if (((*board)[i] = (pData)malloc(sizeof(Data) * BOARD_SIZE))==NULL)
       return ret;
   }
-  int i, j;
   for (i = 0; i < BOARD_SIZE; ++i)
   {
   	for (j = 0; j < BOARD_SIZE; ++j)
@@ -98,16 +98,16 @@ int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData d
   }
   for (i = 0; i < n_data; ++i)
   {
-  	(*board)[n_data[i].position.i][n_data[i].position.j].size = n_data[i].size;
-  	(*board)[n_data[i].position.i][n_data[i].position.j].weight = n_data[i].weight;
-  	(*board)[n_data[i].position.i][n_data[i].position.j].type = n_data[i].type;
+  	(*board)[data_array[i].position.i][data_array[i].position.j].size = data_array[i].size;
+  	(*board)[data_array[i].position.i][data_array[i].position.j].weight = data_array[i].weight;
+  	(*board)[data_array[i].position.i][data_array[i].position.j].type = data_array[i].type;
   }
   return SUCESSO;
 }
 
-int generate_data_board_for_plot(int ***board, int n_data, pData data_array)
+int generate_data_board_for_plot(int ***board, int n_data, pData data_array, int BOARD_SIZE)
 {
-	if (generate_board(board) == FRACASSO)
+	if (generate_board(board, BOARD_SIZE) == FRACASSO)
   	return FRACASSO;
   int i;
   for (i = 0; i < n_data; ++i)
@@ -180,29 +180,47 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
 
 int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE)
 {
-  double cont = 0;
-  double total = 0;
   double sum = 0;
-  double alpha = 2;
+  double alpha = 0.2;
   double f_i = 0;
-  int i, j;
+  int i, j, s = 0;
+  Data data;
+  double max = -1;
+  double min = 100000;
+  double dist;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
     for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
     {
-      Data data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
+      data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
       if (data.type != -1)
       {
-        sum += 1.0 - euclidean_distance(data, board[ant.position.i][ant.position.j])/alpha;
+        s++;
+        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]));
+        sum += dist;
+        if (min > dist)
+        {
+          min = dist;
+        }
+        if (max < dist)
+        {
+          max = dist;
+        }
       }
     }
   }
-  f_i = (1.0/pow(ant.field_of_view,2)) * sum;
+  sum = sum/((max)*s);
+  sum +=s;
+  f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
+  
+  //f_i =  (sum/s)/max;
+  //f_i =  1+(min-(sum/s))/(max - min);
   if (f_i < 0)
   {
     f_i = 0;
   }
-  if (((double)(rand()%100)/100) <= f_i)
+  printf(">>%lf | >> %lf\n", f_i, sum);
+  if (((double)(rand()%100)/100) >= pow(f_i, 2))
     return SIM;
   else
     return NAO;  
@@ -210,29 +228,47 @@ int should_pick_up_data(ppData board, struct Ant ant, int BOARD_SIZE)
 
 int should_drop_off_data(ppData board, struct Ant ant, int BOARD_SIZE)
 {
-  double cont = 0;
-  double total = 0;
   double sum = 0;
-  double alpha = 2;
+  double alpha = 0.2;
   double f_i = 0;
-  int i, j;
+  int i, j, s = 0;
+  Data data;
+  double max = -1;
+  double min = 100000;
+  double dist;
   for (i = -ant.field_of_view; i <= ant.field_of_view; ++i)
   {
     for (j = -ant.field_of_view; j <= ant.field_of_view; ++j)
     {
-      Data data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
+      data = board[mod(ant.position.i + i, BOARD_SIZE)][mod(ant.position.j + j, BOARD_SIZE)];
       if (data.type != -1)
       {
-        sum += 1.0 - euclidean_distance(data, board[ant.position.i][ant.position.j])/alpha;
+        s++;
+        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]));
+        sum += dist;
+        //sum += dist;
+        if (min > dist)
+        {
+          min = dist;
+        }
+        if (max < dist)
+        {
+          max = dist;
+        }
       }
     }
   }
-  f_i = (1.0/pow(ant.field_of_view,2)) * sum;
+  sum = sum/((max)*s);
+  sum +=s;
+  f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
+  
+  //f_i =  (sum/s)/max;
   if (f_i < 0)
   {
     f_i = 0;
   }
-  if (((double)(rand()%100)/100) >= f_i)
+  printf("@@%lf | >> %lf\n", f_i, sum);
+  if (((double)(rand()%100)/100) <= pow(f_i, 2))
     return SIM;
   else
     return NAO;  

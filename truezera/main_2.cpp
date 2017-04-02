@@ -6,7 +6,7 @@
 #include <SFML/Graphics.hpp>
 
 
-void draw_board(sf::RenderWindow & windowRef, int **board, int **live_ants_board, int BOARD_SIZE)
+void draw_board(sf::RenderWindow & windowRef, ppData board, int **live_ants_board, int BOARD_SIZE)
 {
   windowRef.clear(sf::Color::White);
   for (int i = 0; i < BOARD_SIZE; ++i)
@@ -16,22 +16,22 @@ void draw_board(sf::RenderWindow & windowRef, int **board, int **live_ants_board
       sf::RectangleShape rectangle;
       rectangle.setSize(sf::Vector2f(1, 1));
       rectangle.setPosition(i, j);
-      if(board[i][j]==1)
+      if(board[i][j].type==1)
       {
         rectangle.setFillColor(sf::Color::Red);
         windowRef.draw(rectangle);
       }
-      else if (board[i][j]==2)
+      else if (board[i][j].type==2)
       {
         rectangle.setFillColor(sf::Color::Blue);
         windowRef.draw(rectangle);
       }
-      else if (board[i][j]==3)
+      else if (board[i][j].type==3)
       {
         rectangle.setFillColor(sf::Color::Green);
         windowRef.draw(rectangle);
       }
-      else if (board[i][j]==4)
+      else if (board[i][j].type==4)
       {
         rectangle.setFillColor(sf::Color::Yellow);
         windowRef.draw(rectangle);
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[]){
   int FOV_RANGE  = atoi(argv[4]);
 
   srand(time(NULL));
-  sf::RenderWindow window(sf::VideoMode(160, 160), "Ants");
+  sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "Ants");
 
   pPair coords;
   Pair old_position, new_position;
@@ -72,7 +72,7 @@ int main(int argc, char const *argv[]){
 
   generate_data_array(&data_array, 400, BOARD_SIZE);
 
-  generate_data_board_for_plot(&plot_board, 400, data_array);
+  generate_data_board_for_plot(&plot_board, 400, data_array, BOARD_SIZE);
  
   generate_live_ants_board(&live_ants_board, N_LIVE_ANTS, live_ants, BOARD_SIZE);
 
@@ -80,12 +80,12 @@ int main(int argc, char const *argv[]){
 
   //show_board(plot_board, "DATA");  
   gettimeofday(&timevalA, NULL);
-  
+  int i, print, it=0;
   while(true)
   {
     if (it%10000==0)
     {
-      draw_board(window, plot_board, live_ants_board, BOARD_SIZE);
+      draw_board(window, data_board, live_ants_board, BOARD_SIZE);
       window.display();it=0;
     }
     sf::Event event;
@@ -114,7 +114,7 @@ int main(int argc, char const *argv[]){
           drop_off_data(&data_board, &live_ants[i]);
         } 
       }
-      move(live_ants_board, coords, &old_position, &new_position, &live_ants[i]);
+      move(live_ants_board, coords, &old_position, &new_position, &live_ants[i], BOARD_SIZE);
       live_ants_board[old_position.i][old_position.j] = 0;
       live_ants_board[new_position.i][new_position.j] = 1;
     }
@@ -127,9 +127,9 @@ int main(int argc, char const *argv[]){
   printf("\ntempo de execucao: %lf\n", timevalB.tv_sec-timevalA.tv_sec+(timevalB.tv_usec-timevalA.tv_usec)/(double)1000000);
 
   print =1;
-  sf::RenderWindow windows(sf::VideoMode(160, 160), "Ants");
+  sf::RenderWindow windows(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "Ants");
   while (print) {
-    draw_board(windows, board, live_ants_board, BOARD_SIZE);
+    draw_board(windows, data_board, live_ants_board, BOARD_SIZE);
     windows.display();
     sf::Event event;
     while (windows.pollEvent(event))

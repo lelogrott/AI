@@ -54,7 +54,7 @@ void drop_off_data(ppData *board, pAnt p);
 int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE);
 
 
-int generate_data_board_for_plot(int ***board, int n_data, pData data_array);
+int generate_data_board_for_plot(int ***board, int n_data, pData data_array, int BOARD_SIZE);
 int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array, int BOARD_SIZE);
 int generate_data_array(ppData pp, int n_data, int BOARD_SIZE);
 
@@ -64,3 +64,5 @@ int generate_random_numbers(int **random_numbers, int n_numbers, int BOARD_SIZE)
 int generate_board(int ***board, int BOARD_SIZE);
 int show_board(int **board, char *board_name, int BOARD_SIZE);
 int mod (int a, int b);
+double euclidean_distance(Data a, Data b);
+

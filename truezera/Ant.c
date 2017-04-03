@@ -192,7 +192,7 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
 int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 1;
+  double alpha = 0.6;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -206,23 +206,17 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
       {
         s++;
         dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]))/max_dist;
-        // printf("\n>> %lf\n", dist);
         sum +=  1 - dist/alpha;
-        // sum += dist;
       }
     }
   }
   f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
-  // f_i = sum/(s);
-  //f_i =  (sum/s)/max;
-  //f_i =  1+(min-(sum/s))/(max - min);
   if (f_i < 0)
   {
     f_i = 0;
   }
   double pick = pow((0.1/(0.1 + f_i)), 2);
   double pick_chance = ((double)(rand()%1000000)/1000000);
-  //printf(">>%lf | >> %lf | >> %lf | >> %lf\n", f_i, pick, pick_chance, sum);
 
   if ( pick_chance <= pick)
     return SIM;
@@ -233,7 +227,7 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
 int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 1;
+  double alpha = 0.6;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -246,22 +240,17 @@ int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOAR
       if (data.type != -1)
       {
         s++;
-        dist = (euclidean_distance(data, board[ant.position.i][ant.position.j]))/max_dist;
+        dist = (euclidean_distance(data, ant.data))/max_dist;
         sum += 1 - dist/alpha;
-        // sum += dist;
       }
     }
   }
   f_i = (1.0/pow(ant.field_of_view*2 + 1, 2)) * sum;
-  // f_i = sum/(s);
-  
-  //f_i =  (sum/s)/max;
   if (f_i < 0)
   {
     f_i = 0;
   }
-  double drop = pow((f_i/(0.5 + f_i)), 2);
-  //printf("@@%lf | >> %lf | >> %lf\n", f_i, drop, sum);
+  double drop = pow((f_i/(0.3 + f_i)), 2);
   if (((double)(rand()%1000000)/1000000) <= pow((f_i/(0.1 + f_i)), 2))
     return SIM;
   else

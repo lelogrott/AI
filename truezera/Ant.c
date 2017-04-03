@@ -189,10 +189,23 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
     return NAO;
 }
 
+// raio 1:
+//   alpha = 0.6;
+//   k1 = 0.1;
+//   k2 = 0.3;
+// raio 3:
+//   alpha = 0.2;
+//   k1 = 0.05;
+//   k2 = 0.4;
+// raio 5:
+//   alpha = 0.7/0.4;
+//   k1 = 0.01;
+//   k2 = 0.6;
+
 int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.6;
+  double alpha = 0.7;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -215,7 +228,7 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
   {
     f_i = 0;
   }
-  double pick = pow((0.1/(0.1 + f_i)), 2);
+  double pick = pow((0.01/(0.01 + f_i)), 2);
   double pick_chance = ((double)(rand()%1000000)/1000000);
 
   if ( pick_chance <= pick)
@@ -227,7 +240,7 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
 int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.6;
+  double alpha = 0.4;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -250,8 +263,8 @@ int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOAR
   {
     f_i = 0;
   }
-  double drop = pow((f_i/(0.3 + f_i)), 2);
-  if (((double)(rand()%1000000)/1000000) <= pow((f_i/(0.1 + f_i)), 2))
+  double drop = pow((f_i/(0.6 + f_i)), 2);
+  if (((double)(rand()%1000000)/1000000) <= drop)
     return SIM;
   else
     return NAO;  

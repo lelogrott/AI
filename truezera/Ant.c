@@ -35,7 +35,7 @@ int generate_data_array(ppData pp, int n_data, double *max_dist, int BOARD_SIZE)
     double max_weight = -1; double max_size = -1;
     double min_weight = 1000; double min_size = 1000;
     generate_random_numbers(&random_numbers, n_data, BOARD_SIZE);
-    FILE *f = fopen("data.txt", "r");
+    FILE *f = fopen("r15.txt", "r");
     for (i = 0; i < n_data; ++i)
     {
     	double size, weight;

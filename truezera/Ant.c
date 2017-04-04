@@ -116,16 +116,6 @@ int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData d
   return SUCESSO;
 }
 
-int generate_data_board_for_plot(int ***board, int n_data, pData data_array, int BOARD_SIZE)
-{
-	if (generate_board(board, BOARD_SIZE) == FRACASSO)
-  	return FRACASSO;
-  int i;
-  for (i = 0; i < n_data; ++i)
-    (*board)[data_array[i].position.i][data_array[i].position.j] = data_array[i].type;
-  return SUCESSO;
-}
-
 int generate_live_ants_board(int ***board, int n_live_ants, pAnt ants_array, int BOARD_SIZE)
 {
   if (generate_board(board, BOARD_SIZE) == FRACASSO)
@@ -189,6 +179,7 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
     return NAO;
 }
 
+// para arquivo com 400 dados:
 // raio 1:
 //   alpha = 0.6;
 //   k1 = 0.1;
@@ -201,11 +192,23 @@ int should_drop_off(int **board, struct Ant ant, int BOARD_SIZE)
 //   alpha = 0.7/0.4;
 //   k1 = 0.01;
 //   k2 = 0.6;
-
+// para arquivo com 600 dados:
+// raio 1:
+//   alpha = 0.05/0.1;
+//   k1 = 0.05;
+//   k2 = 0.4;
+// raio 2:
+//   alpha = 0.05/0.1;
+//   k1 = 0.05;
+//   k2 = 0.8;
+// raio 3:
+//   alpha = ;
+//   k1 = ;
+//   k2 = ;
 int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.7;
+  double alpha = 0.03;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -228,7 +231,7 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
   {
     f_i = 0;
   }
-  double pick = pow((0.01/(0.01 + f_i)), 2);
+  double pick = pow((0.6/(0.6 + f_i)), 2);
   double pick_chance = ((double)(rand()%1000000)/1000000);
 
   if ( pick_chance <= pick)
@@ -240,7 +243,7 @@ int should_pick_up_data(ppData board, struct Ant ant, double max_dist, int BOARD
 int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOARD_SIZE)
 {
   double sum = 0;
-  double alpha = 0.4;
+  double alpha = 0.2;
   double f_i = 0;
   int i, j, s = 0;
   Data data;
@@ -263,12 +266,14 @@ int should_drop_off_data(ppData board, struct Ant ant, double max_dist, int BOAR
   {
     f_i = 0;
   }
-  double drop = pow((f_i/(0.6 + f_i)), 2);
+  double drop = pow((f_i/(0.99 + f_i)), 2);
+  //drop = (exp(-pow(drop, 2)) - 1)/exp(1);
   if (((double)(rand()%1000000)/1000000) <= drop)
     return SIM;
   else
     return NAO;  
 }
+
 
 void pick_up_data(ppData *board, pAnt p)
 {

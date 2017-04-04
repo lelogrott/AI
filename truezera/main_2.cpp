@@ -157,7 +157,7 @@ int main(int argc, char const *argv[]){
   int i, print, it=0;
   while(true)
   {
-    if (it%1000==0)
+    if (it%10000==0)
     {
       draw_board(window, data_board, live_ants_board, BOARD_SIZE);
       window.display();it=0;

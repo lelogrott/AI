@@ -53,8 +53,6 @@ void pick_up_data(ppData *board, pAnt p);
 void drop_off_data(ppData *board, pAnt p);
 int move(int **live_ants_board, pPair coords, pPair old_position, pPair new_position, pAnt p, int BOARD_SIZE);
 
-
-int generate_data_board_for_plot(int ***board, int n_data, pData data_array, int BOARD_SIZE);
 int generate_and_populate_data_board_for_calc(ppData *board, int n_data, pData data_array, int BOARD_SIZE);
 int generate_data_array(ppData pp, int n_data, double *max_dist, int BOARD_SIZE);
 

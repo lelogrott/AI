@@ -5,20 +5,29 @@
 #define GOOD_TO_GO 1
 #define DAMN_GIRL 0
 #define BOARD_SIZE 42
+#define INITIAL_POS 0
 //0 -> solido (1)
 //1 -> montanha (5) 
 //2 -> patano (10)
 //3 -> fogo (15)
+
+typedef struct Area 
+{
+	int value = 0;
+	int pos= 0;
+	Area *previous = NULL;
+	Area *neighbors = NULL;
+}Area;
+
 
 void read_file_into_matrix(int ***matriz, int linha, int coluna)
 {
 	int terreno, i = 0;
 	FILE *fp = fopen("data.txt", "r");
 	while(fscanf(fp, "%d ", &terreno)!=EOF)
-	{	printf("%d %d\n", i/linha, i%coluna);
+	{	
 		(*matriz)[i/linha][i%coluna] = terreno;
 		i++;
-		printf("%d\n", terreno);
 	}
 	fclose(fp);
 }
@@ -30,7 +39,7 @@ int allocate(int ***matrix, int lines, int columns)
 		return ret;
 	for (i = 0; i < lines; ++i)
 	{
-		if (((*matrix)[i] = calloc(columns, sizeof(int))) == NULL)
+		if (((*matrix)[i] = (int*)calloc(columns, sizeof(int))) == NULL)
 			return ret;
 	}
 	ret = GOOD_TO_GO;

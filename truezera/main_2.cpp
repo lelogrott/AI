@@ -152,16 +152,11 @@ int main(int argc, char const *argv[]){
 
   generate_and_populate_data_board_for_calc(&data_board, 600, data_array, BOARD_SIZE);
 
-  //show_board(plot_board, "DATA");  
-  gettimeofday(&timevalA, NULL);
-  int i, print, it=0;
-  while(true)
+  int print = 1;
+  while(print)
   {
-    if (it%10000==0)
-    {
-      draw_board(window, data_board, live_ants_board, BOARD_SIZE);
-      window.display();it=0;
-    }
+    draw_board(window, data_board, live_ants_board, BOARD_SIZE);
+    window.display();
     sf::Event event;
     while (window.pollEvent(event))
     {
@@ -169,9 +164,31 @@ int main(int argc, char const *argv[]){
       if (event.type == sf::Event::Closed)
       {
         window.close();
-        return 0;
+        print = 0;
+        break;
       }
     }
+  }
+  //show_board(plot_board, "DATA");  
+  gettimeofday(&timevalA, NULL);
+  int i, it=0;
+  while(it < 3000000)
+  {
+    // if (it%10000==0)
+    // {
+    //   draw_board(window, data_board, live_ants_board, BOARD_SIZE);
+    //   window.display();it=0;
+    // }
+    // sf::Event event;
+    // while (window.pollEvent(event))
+    // {
+    //   // "close requested" event: we close the window
+    //   if (event.type == sf::Event::Closed)
+    //   {
+    //     window.close();
+    //     return 0;
+    //   }
+    // }
     for (i = 0; i < N_LIVE_ANTS; ++i)
     {
       if (live_ants[i].loaded == NAO)

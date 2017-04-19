@@ -115,7 +115,29 @@ void draw_board(sf::RenderWindow & windowRef, int **board, int board_size)
   }
 }
 
-
+void get_number_of_neighbors(Area robot_pos, int *n_neighbors)
+{
+  if  ( ((robot_pos.pos == 0)) || 
+        ((robot_pos.pos + BOARD_SIZE  == BOARD_SIZE * BOARD_SIZE)) ||
+        (robot_pos.pos == BOARD_SIZE * BOARD_SIZE - 1) ||
+        (robot_pos.pos == BOARD_SIZE - 1)
+      )
+  {
+    *n_neighbors = 2; // if position 0 0 or last line first column or the last position or last column first line.
+  }
+  else if ( (((robot_pos.pos - 1) % BOARD_SIZE == BOARD_SIZE - 1) && (robot_pos.pos + BOARD_SIZE < BOARD_SIZE * BOARD_SIZE)) ||
+            (robot_pos.pos + BOARD_SIZE > BOARD_SIZE * BOARD_SIZE) ||
+            ((robot_pos.pos + 1) % BOARD_SIZE == 0) ||
+            (robot_pos.pos - 42 < 0)
+          )
+  {
+    *n_neighbors = 3; // if any position in the first column except the last line or any position in the last line any column or any line in the last column
+  }
+  else
+  {
+    *n_neighbors = 4;
+  }
+}
 
 int main(int argc, char const *argv[])
 {
@@ -150,36 +172,14 @@ int main(int argc, char const *argv[])
 
   int n_neighbors = 0;
 
-  if  ( ((robot_pos.pos == 0)) || 
-        ((robot_pos.pos + BOARD_SIZE  == BOARD_SIZE * BOARD_SIZE)) ||
-        (robot_pos.pos == BOARD_SIZE * BOARD_SIZE - 1) ||
-        (robot_pos.pos == BOARD_SIZE - 1)
-      )
-  {
-    n_neighbors = 2; // if position 0 0 or last line first column or the last position or last column first line.
-  }
-  else if ( (((robot_pos.pos - 1) % BOARD_SIZE == BOARD_SIZE - 1) && (robot_pos.pos + BOARD_SIZE < BOARD_SIZE * BOARD_SIZE)) ||
-            (robot_pos.pos + BOARD_SIZE > BOARD_SIZE * BOARD_SIZE) ||
-            ((robot_pos.pos + 1) % BOARD_SIZE == 0) ||
-            (robot_pos.pos - 42 < 0)
-          )
-  {
-    n_neighbors = 3; // if any position in the first column except the last line or any position in the last line any column or any line in the last column
-  }
-  else
-  {
-    n_neighbors = 4;
-  }
-
+  get_number_of_neighbors(&n_neighbors);
 
   robot_pos.neighbors = (Area*)malloc(sizeof(Area) * n_neighbors);
-
 
   field[2][2] = 666;
 
   while(robot_pos.value != 666)
   {
-
 
 
 

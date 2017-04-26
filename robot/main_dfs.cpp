@@ -310,7 +310,7 @@ int main(int argc, char const *argv[])
   }
 
 
-  field[41][41] = 666;
+  field[10][10] = 666;
 
   Area *root=NULL;
 
@@ -333,14 +333,37 @@ int main(int argc, char const *argv[])
   printf("Position: %d\nValue: %d\nActive neighbors: %d\nPrevious: %d\n", found->pos, found->value, found->active_neighbors, found->previous->pos);
 
   int cost = -666;
+  int *visited = NULL;
+  visited = (int*)calloc(BOARD_SIZE*BOARD_SIZE, sizeof(int));
   while(found->previous != NULL)
   {
+    visited[found->pos] = 1;
     cost += found->value;
     found = found->previous;
   }
+
+  int print = 1;
+
   cost += found->value;
   printf(">>POSITION: %d\n>>VALUE: %d\n>>COST: %d\n", found->pos, found->value, cost);
   
+  while(print==1)
+  {
+    draw_board(window, field, BOARD_SIZE, visited);
+    window.display();
+    sf::Event event;
+    while (window.pollEvent(event))
+    {
+      // "close requested" event: we close the window
+      if (event.type == sf::Event::Closed)
+      {
+        window.close();
+        print=0;
+        break;
+      }
+    }
+  }
+
   return 0;
 }
   

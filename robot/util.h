@@ -15,6 +15,7 @@ typedef struct Area
 {
 	int value = 0;
 	int pos= 0;
+	int active_neighbors = 0;
 	Area *previous = NULL;
 	Area *neighbors = NULL;
 }Area;
@@ -26,6 +27,20 @@ void read_file_into_matrix(int ***matriz, int linha, int coluna)
 	FILE *fp = fopen("data.txt", "r");
 	while(fscanf(fp, "%d ", &terreno)!=EOF)
 	{	
+		switch(terreno){
+			case 0:
+				terreno = 1;
+				break;
+			case 1:
+				terreno = 5;
+				break;
+			case 2:
+				terreno = 10;
+				break;
+			case 3:
+				terreno = 15;
+				break;
+		}
 		(*matriz)[i/linha][i%coluna] = terreno;
 		i++;
 	}

@@ -1,4 +1,4 @@
-//compile: g++ -std=c++11 main.cpp -o robot robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
+//compile: g++ -std=c++11 main_dfs.cpp -o robot robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
 
 #include "util.h"
 #include "robot.h"
@@ -178,6 +178,11 @@ void get_neighbors(Area **robot_pos, int **field, int *visited, int *valid_neigh
   int position = (*robot_pos)->pos;
   int neighbors_count = 0;
 
+  if (position % BOARD_SIZE != 0 && visited[position-1] != 1) // does have left neighbor
+  {
+    get_area(position-1, &((*robot_pos)->neighbors[neighbors_count++]), field, *robot_pos);
+    (*valid_neighbors)++;
+  }
   if (position - BOARD_SIZE >= 0  && visited[position - BOARD_SIZE] != 1) // does have up neighbor
   {
     get_area(position-BOARD_SIZE, &((*robot_pos)->neighbors[neighbors_count++]), field, *robot_pos);
@@ -193,17 +198,85 @@ void get_neighbors(Area **robot_pos, int **field, int *visited, int *valid_neigh
     get_area(position+BOARD_SIZE, &((*robot_pos)->neighbors[neighbors_count++]), field, *robot_pos);
     (*valid_neighbors)++;
   }
-  if (position % BOARD_SIZE != 0 && visited[position-1] != 1) // does have left neighbor
-  {
-    get_area(position-1, &((*robot_pos)->neighbors[neighbors_count++]), field, *robot_pos);
-    (*valid_neighbors)++;
-  }
 }
 
+
+Area* load_data(int **field)
+{
+  int n_neighbors = 0;
+  int *visited = NULL;
+
+  visited = (int*)calloc(BOARD_SIZE * BOARD_SIZE, sizeof(int));
+
+  field[41][41] = 666;
+  Area **queue = NULL;
+  int i, queue_size = 0;
+  int queue_at = 0;
+  Area *current=NULL;
+  Area *root = NULL;
+  current = (Area*)malloc(sizeof(Area));
+  current->value = field[INITIAL_POS/BOARD_SIZE][INITIAL_POS%BOARD_SIZE];
+  current->pos = INITIAL_POS; 
+  current->previous = NULL; 
+  root = current;
+  while(current->value != 666)
+  {
+    if (visited[current->pos] == 1)
+    {
+      current = (queue[queue_at++]);
+      continue;
+    }
+    visited[current->pos] = 1;
+    
+    //sleep(2);
+    get_number_of_neighbors(*current, &n_neighbors);
+
+    current->neighbors = (Area*)malloc(sizeof(Area) * n_neighbors);
+
+    int valid_neighbors = 0;
+    get_neighbors(&current, field, visited, &valid_neighbors);
+
+    n_neighbors = valid_neighbors;
+    current->active_neighbors = n_neighbors;
+    //robot_pos.neighbors = (Area*)realloc(robot_pos.neighbors, sizeof(Area)*n_neighbors);
+    queue_size += n_neighbors;
+    queue = (Area**)realloc(queue, sizeof(Area*) * queue_size);
+    for (i = 0; i < n_neighbors; ++i)
+    {
+      queue[queue_size - n_neighbors + i] = &(current->neighbors[i]);
+      //printf(">>POSITION: %d\n>>VALUE: %d\n>>PREVIOUS POSITION: %p\n", queue[queue_size - n_neighbors + i]->pos, queue[queue_size - n_neighbors + i]->value, queue[queue_size - n_neighbors + i]->previous);
+      
+    }
+    current = (queue[queue_at++]);
+  }
+  return root;
+}
+
+
+Area* dfs(Area *root, int depth)
+{
+  int i;
+  Area *found = NULL;
+  if (root->value == 666)
+    return root;
+  if (depth > 0)
+  {
+    for (i = 0; i < root->active_neighbors ; ++i)
+    {
+      found = dfs(&(root->neighbors[i]), depth-1);
+      if (found != NULL)
+      {
+        return found;
+      }
+    }
+  }
+  return NULL;
+}
 
 int main(int argc, char const *argv[])
 {
   int **field = NULL;
+  int i, j;
   
   if (allocate(&field, BOARD_SIZE, BOARD_SIZE) == DAMN_GIRL)
   {
@@ -222,92 +295,39 @@ int main(int argc, char const *argv[])
   }
 
   sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "ROBOT");
-  
-  
-  int n_neighbors = 0;
-  int *visited = NULL;
-
-  visited = (int*)calloc(BOARD_SIZE * BOARD_SIZE, sizeof(int));
 
   field[41][41] = 666;
-  Area **queue = NULL;
-  int i, queue_size = 0;
-  int queue_at = 0;
-  Area *current=NULL;
-  current = (Area*)malloc(sizeof(Area));
-  current->value = field[INITIAL_POS/BOARD_SIZE][INITIAL_POS%BOARD_SIZE];
-  current->pos = INITIAL_POS; 
-  current->previous = NULL; 
 
-  while(current->value != 666)
+  Area *root=NULL;
+
+  root = load_data(field);
+  // printf("%d %p\n", root->pos, root->neighbors);
+  
+
+  //printf("Position: %d\nValue: %d\nActive neighbors: %d\nPrevious: %p\n", root->pos, root->value, root->previous->active_neighbors, root->previous->previous);
+
+  Area *found = NULL;
+  for (i = 0; i < 43; ++i)
   {
-    if (visited[current->pos] == 1)
-    {
-      current = (queue[queue_at++]);
-      continue;
-    }
-    visited[current->pos] = 1;
-    draw_board(window, field, BOARD_SIZE, visited);
-    window.display();
-    sf::Event event;
-    while (window.pollEvent(event))
-    {
-      // "close requested" event: we close the window
-      if (event.type == sf::Event::Closed)
-      {
-        window.close();
-        break;
-      }
-    }
-    //sleep(2);
-    get_number_of_neighbors(*current, &n_neighbors);
-
-    current->neighbors = (Area*)malloc(sizeof(Area) * n_neighbors);
-
-    int valid_neighbors = 0;
-    get_neighbors(&current, field, visited, &valid_neighbors);
-
-    n_neighbors = valid_neighbors;
-    //robot_pos.neighbors = (Area*)realloc(robot_pos.neighbors, sizeof(Area)*n_neighbors);
-    queue_size += n_neighbors;
-    queue = (Area**)realloc(queue, sizeof(Area*) * queue_size);
-    for (i = 0; i < n_neighbors; ++i)
-    {
-      queue[queue_size - n_neighbors + i] = &(current->neighbors[i]);
-      //printf(">>POSITION: %d\n>>VALUE: %d\n>>PREVIOUS POSITION: %p\n", queue[queue_size - n_neighbors + i]->pos, queue[queue_size - n_neighbors + i]->value, queue[queue_size - n_neighbors + i]->previous);
-      
-    }
-    current = (queue[queue_at++]);
+    found = dfs(root, i);
+    if(found != NULL)
+      break;
   }
+  printf("%d\n", i);
+  printf("Position: %d\nValue: %d\nActive neighbors: %d\nPrevious: %d\n", found->pos, found->value, found->active_neighbors, found->previous->pos);
 
-  int cost = -666;
-
-  while(current->previous != NULL)
-  {
-    printf(">>%d\n", current->pos);
-    cost += current->value;
-    current = current->previous;
-  }
-  cost += current->value;
-  printf(">>POSITION: %d\n>>VALUE: %d\n>>COST: %d\n", current->pos, current->value, cost);
-  // while(true)
+  // int cost = -666;
+  // printf("%d\n", i);
+  //printf("oi\n");
+  //printf("previous pos: %d\n", found->previous->pos);
+  // while(found->previous != NULL)
   // {
-
-  //   draw_board(window, field, BOARD_SIZE);
-  //   window.display();
-  //   sf::Event event;
-  //   while (window.pollEvent(event))
-  //   {
-  //     // "close requested" event: we close the window
-  //     if (event.type == sf::Event::Closed)
-  //     {
-  //       window.close();
-  //       break;
-  //     }
-  //   }
+  //   cost += found->value;
+  //   found = found->previous;
   // }
-
-
+  // cost += found->value;
+  //printf(">>POSITION: %d\n>>VALUE: %d\n>>COST: %d\n", found->pos, found->value, cost);
+  
   return 0;
 }
   

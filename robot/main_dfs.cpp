@@ -1,4 +1,4 @@
-//compile: g++ -std=c++11 main_dfs.cpp -o robot robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
+//compile: g++ -std=c++11 main_dfs.cpp -o robotdfs robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
 
 #include "util.h"
 #include "robot.h"
@@ -203,6 +203,7 @@ void get_neighbors(Area **robot_pos, int **field, int *visited, int *valid_neigh
 
 Area* load_data(int **field)
 {
+  setbuf(stdout, NULL);
   int n_neighbors = 0;
   int *visited = NULL;
 
@@ -252,18 +253,32 @@ Area* load_data(int **field)
   return root;
 }
 
+sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "ROBOT");
 
-Area* dfs(Area *root, int depth)
+Area* dfs(Area *root, int depth, int *visited, int **field)
 {
   int i;
   Area *found = NULL;
+  visited[root->pos] = 1;
   if (root->value == 666)
     return root;
   if (depth > 0)
   {
     for (i = 0; i < root->active_neighbors ; ++i)
     {
-      found = dfs(&(root->neighbors[i]), depth-1);
+      draw_board(window, field, BOARD_SIZE, visited);
+      window.display();
+      sf::Event event;
+      while (window.pollEvent(event))
+      {
+        // "close requested" event: we close the window
+        if (event.type == sf::Event::Closed)
+        {
+          window.close();
+          break;
+        }
+      }
+      found = dfs(&(root->neighbors[i]), depth-1, visited, field);
       if (found != NULL)
       {
         return found;
@@ -294,7 +309,6 @@ int main(int argc, char const *argv[])
     printf("ERROR on allocate path array\n");
   }
 
-  sf::RenderWindow window(sf::VideoMode(BOARD_SIZE, BOARD_SIZE), "ROBOT");
 
   field[41][41] = 666;
 
@@ -307,26 +321,25 @@ int main(int argc, char const *argv[])
   //printf("Position: %d\nValue: %d\nActive neighbors: %d\nPrevious: %p\n", root->pos, root->value, root->previous->active_neighbors, root->previous->previous);
 
   Area *found = NULL;
-  for (i = 0; i < 43; ++i)
+  for (i = 0; ; ++i)
   {
-    found = dfs(root, i);
+    int *visited = NULL;
+    visited = (int*)calloc(BOARD_SIZE*BOARD_SIZE, sizeof(int));
+    found = dfs(root, i, visited, field);
     if(found != NULL)
       break;
   }
-  printf("%d\n", i);
+  printf(">>profundidade utilizada: %d\n", i);
   printf("Position: %d\nValue: %d\nActive neighbors: %d\nPrevious: %d\n", found->pos, found->value, found->active_neighbors, found->previous->pos);
 
-  // int cost = -666;
-  // printf("%d\n", i);
-  //printf("oi\n");
-  //printf("previous pos: %d\n", found->previous->pos);
-  // while(found->previous != NULL)
-  // {
-  //   cost += found->value;
-  //   found = found->previous;
-  // }
-  // cost += found->value;
-  //printf(">>POSITION: %d\n>>VALUE: %d\n>>COST: %d\n", found->pos, found->value, cost);
+  int cost = -666;
+  while(found->previous != NULL)
+  {
+    cost += found->value;
+    found = found->previous;
+  }
+  cost += found->value;
+  printf(">>POSITION: %d\n>>VALUE: %d\n>>COST: %d\n", found->pos, found->value, cost);
   
   return 0;
 }

@@ -1,4 +1,4 @@
-//compile: g++ -std=c++11 main.cpp -o robot robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
+//compile: g++ -std=c++11 main_bfs.cpp -o robot robot.c -lsfml-graphics -lsfml-window -lsfml-system -O3
 
 #include "util.h"
 #include "robot.h"

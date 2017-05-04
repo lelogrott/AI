@@ -6,6 +6,7 @@
 #define DAMN_GIRL 0
 #define BOARD_SIZE 42
 #define INITIAL_POS 0
+#define INF 1000000000
 //0 -> solido (1)
 //1 -> montanha (5) 
 //2 -> patano (10)

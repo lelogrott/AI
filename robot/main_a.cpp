@@ -1,4 +1,4 @@
-//compile: g++ -std=c++11 main_dijkstra.cpp -o robotdijkstra lista.c -lsfml-graphics -lsfml-window -lsfml-system -O3
+//compile: g++ -std=c++11 main_a.cpp -o robota lista.c -lsfml-graphics -lsfml-window -lsfml-system -O3
 
 #include "util.h"
 #include "robot.h"
@@ -9,8 +9,8 @@
 #include <unistd.h>
 // #include <Color.hpp>
 void mostra_inteiro(void *info);
-void dijkstra(int **matAdj, int vertInicial);
-int extrairMin(int **matAdj, int *dist, int *visitados);
+void dijkstra(int **matAdj, int vertInicial, int x, int y);
+int extrairMin(int **matAdj, int *dist, int *visitados, int x, int y);
 
 void draw_board(sf::RenderWindow & windowRef, int **board, int board_size, int *visited)
 {
@@ -205,8 +205,27 @@ int** cria_matriz(int **field)
   return matriz;
 }
 
+double euclidean_distance(int pos_src, int pos_dst)
+{
+  int xsrc = pos_src % BOARD_SIZE;
+  int ysrc = pos_src / BOARD_SIZE;
+  int xdst = pos_dst % BOARD_SIZE;
+  int ydst = pos_dst / BOARD_SIZE;
+  // printf("%d %d %d %d\n", xsrc, ysrc, xdst, ydst);
+  int max_dist = sqrt((pow(0-41, 2)) + (pow(0-41, 2)));
+  return (sqrt((pow(xsrc-xdst, 2)) + (pow(ysrc-ydst, 2)))/max_dist);
+}
 
-void dijkstra(int **field, int vertInicial)
+double taxi_distance(int pos_src, int pos_dst)
+{
+  int xsrc = pos_src % BOARD_SIZE;
+  int ysrc = pos_src / BOARD_SIZE;
+  int xdst = pos_dst % BOARD_SIZE;
+  int ydst = pos_dst / BOARD_SIZE;
+  int max_dist = (abs(41-0) + abs(41-0));
+  return ((abs(xsrc-xdst) + abs(ysrc-ydst))/max_dist);
+}
+void dijkstra(int **field, int vertInicial, int x, int y)
 {
   int *dist, *visitados;
   int i, j, u;
@@ -234,82 +253,50 @@ void dijkstra(int **field, int vertInicial)
     insereNoFim(&precedentes, &l);
   }
 
-    // Distancia do proprio vertice inicial e sempre 0
-    dist[vertInicial] = 0;
+  dist[vertInicial] = 0;
 
-    for (i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
-    { 
-    //Extrai o vertice com a menor distancia e que ainda nao foi visitado
-      u = extrairMin(matAdj, dist, visitados);
+  for (i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
+  { 
+    u = extrairMin(matAdj, dist, visitados, x, y);
 
-    //Marca como visitado
-      visitados[u] = 1;
-      cont_expand++;
-      if (field[u/BOARD_SIZE][u%BOARD_SIZE] == 666)
-      {
-        printf("encontrou objetivo.\n");
-        break;
-      }
-
-    //For de 0 at[e BOARD_SIZE (Numero maximo que dijkstra roda)
-        for (j = 0; j < BOARD_SIZE * BOARD_SIZE; j++)
-        {
-          // draw_board(window, field, BOARD_SIZE, visitados);
-          // window.display();
-          // sf::Event event;
-          // while (window.pollEvent(event))
-          // {
-          //   // "close requested" event: we close the window
-          //   if (event.type == sf::Event::Closed)
-          //   {
-          //     window.close();
-          //     //print=0;
-          //     break;
-          //   }
-          // }
-            if (!visitados[j] && matAdj[u][j] != -1 && dist[u] != INF && dist[u]+matAdj[u][j] <= dist[j])
-            {
-        //Se a distancia do no inicial, ate o no atual + ate o no de menor distancia 
-        //For igual, adicione-o na lista tambem como um no precedente
-                if (dist[u]+matAdj[u][j] == dist[j])
-                {
-                    Lista l;
-                    removeNaPosicao(&precedentes, &l, j);
-                    insereNoFim(&l, &u);
-                    insereNaPosicao(&precedentes, &l, j);
-                }
-        //Se nao for, retire todos os nos precedentes, e coloque o novo no precedente.
-                else
-                {
-                    Lista l;
-                    removeNaPosicao(&precedentes, &l, j);
-                    limpa_lista(&l);
-                    insereNoFim(&l, &u);
-                    insereNaPosicao(&precedentes, &l, j);
-                }
-        //Atualize a distancia
-                dist[j] = dist[u] + matAdj[u][j];
-            }
-        }
-
+    visitados[u] = 1;
+    cont_expand++;
+    if (field[u/BOARD_SIZE][u%BOARD_SIZE] == 666)
+    {
+      printf("encontrou objetivo.\n");
+      break;
     }
-  //Imprime
-    // printf("VERTICES   : ");
-    // for (i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
-    //     printf("%d  ", i);
-    // printf("\n");
-    // printf("ESTIMATIVAS: ");
-    // for (i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
-    //     printf("%d  ", dist[i]);
-    // printf("\n");
+
+    for (j = 0; j < BOARD_SIZE * BOARD_SIZE; j++)
+    {
+      if (!visitados[j] && matAdj[u][j] != -1 && dist[u] != INF && dist[u]+matAdj[u][j] /*+ (euclidean_distance(j, x*BOARD_SIZE + y))*/ <= dist[j])
+      {
+        if (dist[u]+matAdj[u][j] == dist[j])
+        {
+          Lista l;
+          removeNaPosicao(&precedentes, &l, j);
+          insereNoFim(&l, &u);
+          insereNaPosicao(&precedentes, &l, j);
+        }
+        else
+        {
+          Lista l;
+          removeNaPosicao(&precedentes, &l, j);
+          limpa_lista(&l);
+          insereNoFim(&l, &u);
+          insereNaPosicao(&precedentes, &l, j);
+        }
+        dist[j] = dist[u] + matAdj[u][j];//+ (euclidean_distance(j, x*BOARD_SIZE + y));
+      }
+    }
+  }
+  
     printf("\nDistancias:\n");
-    //for (i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
     {
         printf("Vertice %d ao vertice %d: %d\n", vertInicial, u, dist[u]);
     }
     printf("PRECEDENTES:\n");
-   //for (i = 0; i < u; i++)
-      visitados[u] = 2;
+    visitados[u] = 2;
     while(u != vertInicial)
     {
         printf("Precedente(s) vertice %d: ", u);
@@ -348,14 +335,15 @@ void dijkstra(int **field, int vertInicial)
 }
 
 // Funcao para extrair o no que tem menor distancia
-int extrairMin(int **matAdj, int *dist, int *visitados)
+int extrairMin(int **matAdj, int *dist, int *visitados, int x, int y)
 {
     int min = INF;
     int min_index;
     int v;
     for(v = 0; v < BOARD_SIZE * BOARD_SIZE; v++)
     {
-        if(!visitados[v] && dist[v] <= min)
+        if(!visitados[v] && dist[v] + (euclidean_distance(v, x*BOARD_SIZE + y))*90 <= min)
+        // if(!visitados[v] && dist[v] <= min)
         {
             min = dist[v];
             min_index = v;
@@ -389,7 +377,7 @@ int main(int argc, char const *argv[])
   field[atoi(argv[1])][atoi(argv[2])] = 666;
 
   
-  dijkstra(field, INITIAL_POS);
+  dijkstra(field, INITIAL_POS, atoi(argv[1]), atoi(argv[2]));
 
   return 0;
 }

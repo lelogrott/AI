@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define GOOD_TO_GO 1
 #define DAMN_GIRL 0
